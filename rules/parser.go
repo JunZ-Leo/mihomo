@@ -14,17 +14,11 @@ func ParseRule(tp, payload, target string, params []string, subRules map[string]
 		return nil, fmt.Errorf("missing subsequent parameters: %s", tp)
 	}
 
+	if parsed, handled, err := parseSimpleRule(tp, payload, target); handled {
+		return parsed, err
+	}
+
 	switch tp {
-	case "DOMAIN":
-		parsed = RC.NewDomain(payload, target)
-	case "DOMAIN-SUFFIX":
-		parsed = RC.NewDomainSuffix(payload, target)
-	case "DOMAIN-KEYWORD":
-		parsed = RC.NewDomainKeyword(payload, target)
-	case "DOMAIN-REGEX":
-		parsed, parseErr = RC.NewDomainRegex(payload, target)
-	case "DOMAIN-WILDCARD":
-		parsed, parseErr = RC.NewDomainWildcard(payload, target)
 	case "GEOSITE":
 		parsed, parseErr = RC.NewGEOSITE(payload, target)
 	case "GEOIP":
@@ -47,38 +41,6 @@ func ParseRule(tp, payload, target string, params []string, subRules map[string]
 		parsed, parseErr = RC.NewIPSuffix(payload, target, isSrc, noResolve)
 	case "SRC-IP-SUFFIX":
 		parsed, parseErr = RC.NewIPSuffix(payload, target, true, true)
-	case "SRC-PORT":
-		parsed, parseErr = RC.NewPort(payload, target, C.SrcPort)
-	case "DST-PORT":
-		parsed, parseErr = RC.NewPort(payload, target, C.DstPort)
-	case "IN-PORT":
-		parsed, parseErr = RC.NewPort(payload, target, C.InPort)
-	case "DSCP":
-		parsed, parseErr = RC.NewDSCP(payload, target)
-	case "PROCESS-NAME":
-		parsed, parseErr = RC.NewProcess(payload, target, C.ProcessName)
-	case "PROCESS-PATH":
-		parsed, parseErr = RC.NewProcess(payload, target, C.ProcessPath)
-	case "PROCESS-NAME-REGEX":
-		parsed, parseErr = RC.NewProcess(payload, target, C.ProcessNameRegex)
-	case "PROCESS-PATH-REGEX":
-		parsed, parseErr = RC.NewProcess(payload, target, C.ProcessPathRegex)
-	case "PROCESS-NAME-WILDCARD":
-		parsed, parseErr = RC.NewProcess(payload, target, C.ProcessNameWildcard)
-	case "PROCESS-PATH-WILDCARD":
-		parsed, parseErr = RC.NewProcess(payload, target, C.ProcessPathWildcard)
-	case "NETWORK":
-		parsed, parseErr = RC.NewNetworkType(payload, target)
-	case "UID":
-		parsed, parseErr = RC.NewUid(payload, target)
-	case "IN-TYPE":
-		parsed, parseErr = RC.NewInType(payload, target)
-	case "IN-USER":
-		parsed, parseErr = RC.NewInUser(payload, target)
-	case "IN-NAME":
-		parsed, parseErr = RC.NewInName(payload, target)
-	case "REMATCH-NAME":
-		parsed, parseErr = RC.NewRematchName(payload, target)
 	case "SUB-RULE":
 		parsed, parseErr = logic.NewSubRule(payload, target, subRules, ParseRule)
 	case "AND":
@@ -90,9 +52,6 @@ func ParseRule(tp, payload, target string, params []string, subRules map[string]
 	case "RULE-SET":
 		isSrc, noResolve := RC.ParseParams(params)
 		parsed, parseErr = RP.NewRuleSet(payload, target, isSrc, noResolve)
-	case "MATCH":
-		parsed = RC.NewMatch(target)
-		parseErr = nil
 	default:
 		parseErr = fmt.Errorf("unsupported rule type: %s", tp)
 	}
