@@ -17,10 +17,9 @@ import (
 	"github.com/metacubex/mihomo/adapter/provider"
 	"github.com/metacubex/mihomo/common/orderedmap"
 	"github.com/metacubex/mihomo/common/utils"
-	"github.com/metacubex/mihomo/common/yaml"
-	"github.com/metacubex/mihomo/component/age"
 	"github.com/metacubex/mihomo/component/auth"
 	"github.com/metacubex/mihomo/component/cidr"
+	"github.com/metacubex/mihomo/component/configloader"
 	"github.com/metacubex/mihomo/component/fakeip"
 	"github.com/metacubex/mihomo/component/geodata"
 	"github.com/metacubex/mihomo/component/process"
@@ -607,13 +606,7 @@ func UnmarshalRawConfig(buf []byte) (*RawConfig, error) {
 	// config with default value
 	rawCfg := DefaultRawConfig()
 
-	// decrypt config
-	buf, err := age.DecryptBytes(buf)
-	if err != nil {
-		return nil, fmt.Errorf("decrypt config error: %w", err)
-	}
-
-	if err := yaml.Unmarshal(buf, rawCfg); err != nil {
+	if err := configloader.Unmarshal(buf, rawCfg); err != nil {
 		return nil, err
 	}
 

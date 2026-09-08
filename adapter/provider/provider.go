@@ -14,6 +14,7 @@ import (
 	"github.com/metacubex/mihomo/common/utils"
 	"github.com/metacubex/mihomo/common/yaml"
 	"github.com/metacubex/mihomo/component/age"
+	"github.com/metacubex/mihomo/component/configloader"
 	"github.com/metacubex/mihomo/component/profile/cachefile"
 	"github.com/metacubex/mihomo/component/resource"
 	C "github.com/metacubex/mihomo/constant"
@@ -376,9 +377,9 @@ func NewProxiesParser(pdName string, tunnel C.Tunnel, filter string, excludeFilt
 		schema := &ProxySchema{}
 
 		// decrypt config
-		buf, err := age.DecryptBytes(buf, ageSecretKey)
+		buf, err := configloader.Decrypt(buf, ageSecretKey)
 		if err != nil {
-			return nil, fmt.Errorf("decrypt config error: %w", err)
+			return nil, err
 		}
 
 		if err := yaml.Unmarshal(buf, schema); err != nil {
