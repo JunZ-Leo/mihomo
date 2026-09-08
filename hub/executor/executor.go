@@ -16,6 +16,7 @@ import (
 	"github.com/metacubex/mihomo/adapter/outboundgroup"
 	"github.com/metacubex/mihomo/component/auth"
 	"github.com/metacubex/mihomo/component/ca"
+	"github.com/metacubex/mihomo/component/configloader"
 	"github.com/metacubex/mihomo/component/dialer"
 	"github.com/metacubex/mihomo/component/geodata"
 	mihomoHttp "github.com/metacubex/mihomo/component/http"
@@ -44,22 +45,6 @@ import (
 
 var mux sync.Mutex
 
-func readConfig(path string) ([]byte, error) {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return nil, err
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(data) == 0 {
-		return nil, fmt.Errorf("configuration file %s is empty", path)
-	}
-
-	return data, err
-}
-
 // Parse config with default config path
 func Parse() (*config.Config, error) {
 	return ParseWithPath(C.Path.Config())
@@ -67,7 +52,7 @@ func Parse() (*config.Config, error) {
 
 // ParseWithPath parse config with custom config path
 func ParseWithPath(path string) (*config.Config, error) {
-	buf, err := readConfig(path)
+	buf, err := configloader.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
